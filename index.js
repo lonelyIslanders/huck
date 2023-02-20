@@ -10,8 +10,10 @@ async function main() {
     await fileCommand.fileIsExistAndTouch();
     const oldPrice = await common.getOldPrice();
     const newPrice = await common.getNewPrice();
+    const result = await common.toCompare(oldPrice.latest, newPrice)//得到最新数据差值
     console.log(oldPrice)
     console.log(newPrice);
+    console.log(result)
 }
 
 (async () => {

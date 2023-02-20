@@ -50,20 +50,37 @@ module.exports = {
 
     async toCompare(oldPrice, newPrice) {
         return new Promise((res, rej) => {
-            const result = oldPrice.map(oldItem => {
-                const { symbol, price: oldPrice } = oldItem;
-                let newPriceValue = 0;
-                const newItem = newPrice.find(newItem => newItem.symbol === symbol);
-                if (newItem) {
-                    newPriceValue = Number(newItem.price);
-                }
-                const diff = newPriceValue - Number(oldPrice);
-                return { symbol, price: diff.toFixed(2) };
-            });
-            res(result)
+            try {
+                const diff = oldPrice.map(oldItem => {
+                    const { symbol, price: oldPriceValue } = oldItem;
+                    const { price: newPriceValue } = newPrice.find(newItem => newItem.symbol === symbol) || {};
+                    const newPriceNum = newPriceValue ? Number(newPriceValue) : 0;
+                    const oldPriceNum = Number(oldPriceValue);
+                    const diff = newPriceNum - oldPriceNum;
+                    const diffRounded = Math.round(diff * 100) / 100;
+                    if (diffRounded === 0) {
+                        return null;
+                    }
+                    const percentageDiff = oldPriceNum === 0 ? 100 : (diffRounded / oldPriceNum) * 100;
+                    const percentageDiffRounded = Math.round(percentageDiff * 100) / 100;
+                    const diffObj = { symbol, price: diffRounded.toFixed(2), percentageDiff: percentageDiffRounded.toFixed(2) + '%' };
+                    return diffObj;
+                }).filter(diffItem => diffItem !== null);
+
+                newPrice.forEach(newItem => {
+                    if (!oldPrice.some(oldItem => oldItem.symbol === newItem.symbol)) {
+                        diff.push({ symbol: newItem.symbol, price: newItem.price, percentageDiff: '100%' });
+                    }
+                });
+                res(diff)
+                return diff;
+            } catch (error) {
+                console.error(error);
+                rej(error)
+                throw new Error('Failed to compare prices');
+            }
         })
     },
-
 
     async fiveMins(oldPrice, newPrice) {
 
