@@ -8,10 +8,10 @@ const common = require('./common/index');
 
 async function main() {
     await fileCommand.fileIsExistAndTouch();
-    const newPrice = await common.getNewPrice();
     const oldPrice = await common.getOldPrice();
-    const result = await common.toCompare(oldPrice, newPrice);
-    console.log(newPrice)
+    const newPrice = await common.getNewPrice();
+    console.log(oldPrice)
+    console.log(newPrice);
 }
 
 (async () => {

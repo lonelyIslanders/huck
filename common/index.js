@@ -1,13 +1,12 @@
 const config = require('../config/config');
 const request = require('request');
 const fs = require('fs');
-
+const fileCommand = require('../fileCommand/index');
 
 module.exports = {
     //根据symbols获取最新价格,同时写入
     async getNewPrice() {
         return new Promise((res, rej) => {
-            console.log("45条5")
             const options = {
                 url: `${config.url + JSON.stringify(config.symbols).toUpperCase()}`,
                 timeout: 10000
@@ -19,7 +18,11 @@ module.exports = {
                 } else {
                     if (await this.getOldPrice() === null) {//首次空文件，写入
                         const result = { latest: JSON.parse(data.body) }
-                        fs.writeFile(config.readFilePath, JSON.stringify(result), (err) => { console.log(err) });
+                        await fileCommand.writeFun(config.readFilePath, result)
+                    } else {
+                        const rd = await this.getOldPrice();
+                        rd.latest = JSON.parse(data.body);
+                        await fileCommand.writeFun(config.readFilePath, rd);
                     }
                     res(JSON.parse(data.body));
                 }
